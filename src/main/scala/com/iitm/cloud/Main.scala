@@ -52,34 +52,34 @@ object Main extends App {
   // Paper vertices
   df.select("id").withColumn("TYPE", lit("paper"))
 
-  // Author vertices
-  df.select("authors").withColumn("authors", explode(df("authors")))
-    .select($"authors".getField("ids").getItem(0)).withColumn("TYPE", lit("author"))
-    .withColumnRenamed("authors.ids[0]", "id")
-  
-  // val a = df.select("authors").filter((size($"authors") !== 0) && (size($"authors".getItem(0).getField("ids")) !== 0)).select($"authors".getItem(0).getField("ids").getItem(0));
-
-  // Journal vertices
-  df.select("journalName").withColumn("TYPE", lit("venue"))
-    .withColumnRenamed("journalName", "id")
-
-
-  // Author-Author edges
-  df.select("authors")
-    .filter((size($"authors") =!= 0) && (size($"authors".getItem(0).getField("ids")) =!= 0))
-    .withColumn("coauthors", explode(df("authors")))
-
-  // Paper-Paper edges
-  df.select("id", "outCitations")
-    .withColumn("outCitations", explode(df("outCitations")))
-    .withColumnRenamed("id", "src")
-    .withColumnRenamed("outCitations","dst")
-
-  // Paper-Author edges
-  // Author-Venue edges
-  // Paper-Venue edges
-
-  // Stop spark session
-  spark.stop()
+//  // Author vertices
+//  df.select("authors").withColumn("authors", explode(df("authors")))
+//    .select($"authors".getField("ids").getItem(0)).withColumn("TYPE", lit("author"))
+//    .withColumnRenamed("authors.ids[0]", "id")
+//
+//  // val a = df.select("authors").filter((size($"authors") !== 0) && (size($"authors".getItem(0).getField("ids")) !== 0)).select($"authors".getItem(0).getField("ids").getItem(0));
+//
+//  // Journal vertices
+//  df.select("journalName").withColumn("TYPE", lit("venue"))
+//    .withColumnRenamed("journalName", "id")
+//
+//
+//  // Author-Author edges
+//  df.select("authors")
+//    .filter((size($"authors") =!= 0) && (size($"authors".getItem(0).getField("ids")) =!= 0))
+//    .withColumn("coauthors", explode(df("authors")))
+//
+//  // Paper-Paper edges
+//  df.select("id", "outCitations")
+//    .withColumn("outCitations", explode(df("outCitations")))
+//    .withColumnRenamed("id", "src")
+//    .withColumnRenamed("outCitations","dst")
+//
+//  // Paper-Author edges
+//  // Author-Venue edges
+//  // Paper-Venue edges
+//
+//  // Stop spark session
+//  spark.stop()
 
 }
