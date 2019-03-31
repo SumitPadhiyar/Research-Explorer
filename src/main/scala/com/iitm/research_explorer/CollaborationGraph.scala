@@ -1,21 +1,15 @@
 package com.iitm.research_explorer
 
-import org.apache.spark.sql.{SparkSession, functions}
+import org.apache.spark.sql.{SparkSession, functions, DataFrame}
 import org.apache.spark.sql.functions._
 import org.graphframes.GraphFrame
 
-object CollaborationGraph extends App {
-
-  val spark = SparkSession
-    .builder()
-    .appName("research-explorer")
-    .config("spark.master", "local")
-    .getOrCreate()
+class CollaborationGraph (val inpDf: DataFrame, spark: SparkSession) {
 
   import spark.implicits._
 
-  // Read data from json
-  val df = spark.read.json("/home/skip/MS/Jan_May_2019/Cloud_computing/research-explorer/dataset/sample-S2-records").as[PaperMetaData].select("authors").as[Array[Author]]
+  val df = inpDf.as[PaperMetaData].select("authors").as[Array[Author]]
+
 
   val authorDF = df.withColumn("authors", explode($"authors"))
     .select($"authors.ids", $"authors.name".as("name"))
@@ -35,9 +29,5 @@ object CollaborationGraph extends App {
   val graph = GraphFrame(authorDF, authorEdgeDF)
 
   println(graph.degrees.show(10))
-
-  // Stop spark session
-  spark.stop()
-
 
 }
