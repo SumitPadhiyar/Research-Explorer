@@ -1,4 +1,4 @@
-package com.iitm.cloud
+package com.iitm.research_explorer
 
 /*
   Graph Structure:
@@ -7,7 +7,7 @@ package com.iitm.cloud
       - Authors
       - Papers
       - Venues
-      - 
+      -
  */
 object PaperRank {
 
