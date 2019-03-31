@@ -1,8 +1,8 @@
-package com.iitm.cloud
+package com.iitm.research_explorer
 
-import org.apache.spark.sql._
-import org.apache.spark.sql.functions._
-import org.graphframes._
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions.{countDistinct, explode, lit}
+import org.graphframes.GraphFrame
 
 object Main extends App {
 
