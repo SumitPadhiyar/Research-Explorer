@@ -1,8 +1,6 @@
 package com.iitm.research_explorer
 
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions.{countDistinct, explode, lit}
-import org.graphframes.GraphFrame
 
 /*
  * Command Line input: Path to json
@@ -22,6 +20,9 @@ object Main extends App {
   val citationGraph = new CitationGraph(df)
 
   val collaborationGraph = new CollaborationGraph(df, spark)
+
+  val publicationGraph = new PublicationGraph(df, spark)
+  publicationGraph.generatePaperVenueEdgesDF()
 
   spark.stop()
 
