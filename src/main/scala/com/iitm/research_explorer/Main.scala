@@ -15,6 +15,9 @@ object Main extends App {
 
   spark.sparkContext.setCheckpointDir("/tmp")
 
+  // Change log level - use INFO for more descriptive logs
+  spark.sparkContext.setLogLevel("WARN")
+
   val df = spark.read.json(args(0))
 
   val citationGraph = new CitationGraph(df)
@@ -22,7 +25,8 @@ object Main extends App {
   val collaborationGraph = new CollaborationGraph(df, spark)
 
   val publicationGraph = new PublicationGraph(df, spark)
-  publicationGraph.generatePaperVenueEdgesDF()
+  println("Number of vertices: " + publicationGraph.graph.vertices.count)
+  println("Number of edges: " + publicationGraph.graph.edges.count)
 
   spark.stop()
 
