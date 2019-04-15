@@ -3,6 +3,8 @@ package com.iitm.research_explorer
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions._
 import org.graphframes.GraphFrame
+import org.graphframes.GraphFrame.DST
+import org.graphframes.GraphFrame.SRC
 
 class PublicationGraph(val df: DataFrame, sparkSession: SparkSession) {
 
@@ -24,19 +26,26 @@ class PublicationGraph(val df: DataFrame, sparkSession: SparkSession) {
   generateGraph()
 
   def generatePaperVenueEdgesDF(): Unit = {
-    paperVenueEdgesDF = df.select($"id".as("src"), $"venue".as("dst"), lit(EdgeType.PaperToVenue.toString).as("type"))
+    paperVenueEdgesDF = df.select($"id".as("src"), $"venue".as("dst"))
       .filter(row => !row.getAs[String](0).isEmpty && !row.getAs[String](1).isEmpty)
+
+    paperVenueEdgesDF = symmetrize(paperVenueEdgesDF)
+      .withColumn("type", lit(EdgeType.PaperToVenue.toString))
+
     paperVenueEdgesDF.printSchema()
     paperVenueEdgesDF.show()
   }
 
   def generatePaperAuthorEdgesDF(): Unit = {
-    paperAuthorEdgesDF = df.select($"id", $"authors", lit(EdgeType.PaperToAuthor.toString).as("type"))
+    paperAuthorEdgesDF = df.select($"id", $"authors")
       .withColumn("authors", explode($"authors"))
       .filter(size($"authors".getField("ids")) === 1)
       .withColumnRenamed("id", "src")
       .withColumn("dst", $"authors".getField("ids").getItem(0))
       .drop("authors")
+
+    paperAuthorEdgesDF = symmetrize(paperAuthorEdgesDF)
+      .withColumn("type", lit(EdgeType.PaperToAuthor.toString))
 
     paperAuthorEdgesDF.printSchema()
     paperAuthorEdgesDF.show()
@@ -50,6 +59,10 @@ class PublicationGraph(val df: DataFrame, sparkSession: SparkSession) {
       .withColumn("dst", $"authors".getField("ids").getItem(0))
       .drop("authors")
 
+    authorVenueEdgesDF = symmetrize(authorVenueEdgesDF)
+      .withColumn("type", lit(EdgeType.AuthorToVenue.toString))
+
+
     authorVenueEdgesDF.printSchema()
     authorVenueEdgesDF.show()
   }
@@ -60,12 +73,15 @@ class PublicationGraph(val df: DataFrame, sparkSession: SparkSession) {
       .filter(size($"authors") > 0)
       .withColumn("authors", explode($"authors"))
       .select($"authors._1".as("src"), $"authors._2".as("dst"))
+
+    authorAuthorEdgesDF = symmetrize(authorAuthorEdgesDF)
       .withColumn("type", lit(EdgeType.AuthorToAuthor.toString))
 
     authorAuthorEdgesDF.printSchema()
     authorAuthorEdgesDF.show()
   }
 
+  // NOTE: Paper to paper edges are directed
   def generatePaperPaperEdgesDF(): Unit = {
     paperPaperEdgesDF = df.select("id", "outCitations")
       .withColumn("outCitations", explode(df("outCitations")))
@@ -98,6 +114,21 @@ class PublicationGraph(val df: DataFrame, sparkSession: SparkSession) {
     venueVerticesDF.printSchema()
     venueVerticesDF.show()
   }
+
+  /**
+    * Returns the symmetric directed graph of the graph specified by input edges.
+    * @param ee non-bidirectional edges
+    */
+  def symmetrize(ee: DataFrame): DataFrame = {
+    val EDGE = "_edge"
+    ee.select(explode(array(
+      struct(col(SRC), col(DST)),
+      struct(col(DST).as(SRC), col(SRC).as(DST)))
+    ).as(EDGE))
+      .select(col(s"$EDGE.$SRC").as(SRC),
+              col(s"$EDGE.$DST").as(DST))
+  }
+
 
   def generateGraph(): Unit = {
     // Create vertices and edges dataframes

@@ -4,23 +4,23 @@ import org.graphframes.GraphFrame
 import org.graphframes.lib.Pregel
 import org.apache.spark.sql.functions._
 
-/*
-*
-* Rank authors, paper and venues.
-* Based on "A Graph Analytics Framework for Ranking Authors, Papers and Venues"
-* [https://arxiv.org/pdf/1708.00329.pdf]
-*
-* Uses GraphFrame's Pregel API:
-* https://graphframes.github.io/graphframes/docs/_site/api/scala/index.html#org.graphframes.lib.Pregel
-* Implementation ideas:
-* We keep track of rank of each vertex. Whenever there is a change in rank of the vertex,
-* it propagates the change to its neighbor in the form of delta (current_rank - previous_rank).
-* This delta can then simply be added by each vertex to its own rank.
-* Initialize rank with the degree of each vertex
-* To compute the delta, we keep track of both the current and previous rank.
-* Initially previous_rank = 1 and current_rank = 1 / deg(v)
+/**
+  *
+  * Rank authors, paper and venues.
+  * Based on "A Graph Analytics Framework for Ranking Authors, Papers and Venues"
+  * [https://arxiv.org/pdf/1708.00329.pdf]
+  *
+  * Uses GraphFrame's Pregel API:
+  * https://graphframes.github.io/graphframes/docs/_site/api/scala/index.html#org.graphframes.lib.Pregel
+  * Implementation ideas:
+  * We keep track of rank of each vertex. Whenever there is a change in rank of the vertex,
+  * it propagates the change to its neighbor in the form of delta (current_rank - previous_rank).
+  * This delta can then simply be added by each vertex to its own rank.
+  * Initialize rank with the degree of each vertex
+  * To compute the delta, we keep track of both the current and previous rank.
+  * Initially previous_rank = 1 and current_rank = 1 / deg(v)
 
- */
+  */
 class PaperRank (graph: GraphFrame) {
 
   val ranks = graph.pregel
