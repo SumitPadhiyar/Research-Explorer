@@ -5,6 +5,7 @@ import org.apache.spark.sql.functions._
 import org.graphframes.GraphFrame
 import org.graphframes.GraphFrame.DST
 import org.graphframes.GraphFrame.SRC
+import org.graphframes.GraphFrame.ID
 
 class PublicationGraph(val df: DataFrame, sparkSession: SparkSession) {
 
@@ -140,12 +141,15 @@ class PublicationGraph(val df: DataFrame, sparkSession: SparkSession) {
     generatePaperVenueEdgesDF()
 
     // Union all the vertices and edges into two dataframes
-    val vertexDF = authorVerticesDF.union(paperVerticesDF).union(venueVerticesDF)
+    val allVertices = authorVerticesDF.union(paperVerticesDF).union(venueVerticesDF)
     val edgeDF = authorAuthorEdgesDF.union(authorVenueEdgesDF)
                   .union(paperAuthorEdgesDF)
                   .union(paperPaperEdgesDF)
                   .union(paperVenueEdgesDF)
-
+    val vertexDegrees = edgeDF.select(explode(array(SRC, DST)).as(ID)).groupBy(ID)
+                        .agg(count("*").cast("int").as("degree"))
+    val vertexDF = allVertices.join(vertexDegrees, "id")
+    vertexDF.show(100)
     // Create GraphFrame
     graph = GraphFrame(vertexDF, edgeDF)
 
