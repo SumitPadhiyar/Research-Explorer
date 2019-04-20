@@ -24,19 +24,19 @@ import org.apache.spark.sql.functions._
 class PaperRank (graph: GraphFrame) {
 
   val ranks = graph.pregel
+    // Column current rank. Normalizes the rank after adding all the messages
+    .withVertexColumn("rank",  lit(col("degree") / col("degree")),
+      (coalesce(Pregel.msg, lit(0.0)) + col("rank"))
+        / col("degree"))
     // Column previous_rank. After the messages are received, it stores the current
     // value of rank
-    .withVertexColumn("prev_rank", lit(1.0),
-    // FIXME: rank column is not yet created, so can't be referenced
-                      Pregel.src("rank"))
-    // Column current rank. Normalizes the rank after adding all the messages
-    .withVertexColumn("rank",  lit(lit(1.0) / col("degree")),
-      (coalesce(Pregel.msg, lit(0.0)) + Pregel.src("rank"))
-        / col("degree"))
+    .withVertexColumn("prev_rank", col("degree"), col("rank"))
     // TODO: Send messages to neighbors only when the current rank is different from previous rank
     .sendMsgToDst(Pregel.src("rank") - Pregel.src("prev_rank"))
     // Sum messages received from the neighbors
     .aggMsgs(sum(Pregel.msg))
+    .setMaxIter(2)
     .run()
 
+  ranks.show(50)
 }

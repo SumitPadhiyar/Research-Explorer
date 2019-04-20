@@ -28,7 +28,7 @@ object Main extends App {
   println("Number of vertices: " + publicationGraph.graph.vertices.count)
   println("Number of edges: " + publicationGraph.graph.edges.count)
 
-  //val paperRank = new PaperRank(publicationGraph.graph)
+  val paperRank = new PaperRank(publicationGraph.graph)
   spark.stop()
 
 }
