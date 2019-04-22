@@ -16,3 +16,9 @@ sbt:research-explorer> compile
 sbt:research-explorer> run
 ```
 
+To run with JVM memory:
+
+```shell
+env JAVA_OPTS="-Xms4g -Xmx8g" sbt "run path_to_file"
+```
+
