@@ -17,9 +17,9 @@ class PublicationGraph(val df: DataFrame, sparkSession: SparkSession) {
   private var authorAuthorEdgesDF: DataFrame = _
   private var paperPaperEdgesDF: DataFrame = _
 
-  private var authorVerticesDF: DataFrame = _
-  private var paperVerticesDF: DataFrame = _
-  private var venueVerticesDF: DataFrame = _
+  var authorVerticesDF: DataFrame = _
+  var paperVerticesDF: DataFrame = _
+  var venueVerticesDF: DataFrame = _
 
   var graph: GraphFrame = _
 

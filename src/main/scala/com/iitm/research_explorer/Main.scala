@@ -32,6 +32,12 @@ object Main extends App {
   println("Number of edges: " + publicationGraph.graph.edges.count)
 
   val paperRank = new PaperRank(publicationGraph.graph)
+  //paperRank.execute()
+  val queries = new Queries(publicationGraph, spark)
+  queries.mostCitedPapers()
+  queries.mostPopularAuthors()
+  queries.mostPopularVenues()
+  queries.mostCitedAuthors()
   spark.stop()
 
 }
