@@ -23,20 +23,21 @@ import org.apache.spark.sql.functions._
   */
 class PaperRank (graph: GraphFrame) {
 
-  val ranks = graph.pregel
-    // Column current rank. Normalizes the rank after adding all the messages
-    .withVertexColumn("rank",  lit(lit(1.0) / col("degree")),
-      (coalesce(Pregel.msg, lit(0.0)) + col("rank"))
-        / col("degree"))
-    // Column previous_rank. After the messages are received, it stores the current
-    // value of rank
-    .withVertexColumn("prev_rank", lit(0.0), col("rank"))
-    // TODO: Send messages to neighbors only when the current rank is different from previous rank
-    .sendMsgToDst(Pregel.src("rank") - Pregel.src("prev_rank"))
-    // Sum messages received from the neighbors
-    .aggMsgs(sum(Pregel.msg))
-    .setMaxIter(5)
-    .run()
+  def execute() : Unit ={
+    val ranks = graph.pregel
+      // Column current rank. Normalizes the rank after adding all the messages
+      .withVertexColumn("rank",  lit(1.0),
+      coalesce(Pregel.msg, lit(0.0)) + col("rank"))
+      // Column previous_rank. After the messages are received, it stores the current
+      // value of rank
+      .withVertexColumn("prev_rank", lit(0.0), col("rank"))
+      // TODO: Send messages to neighbors only when the current rank is different from previous rank
+      .sendMsgToDst((Pregel.src("rank") - Pregel.src("prev_rank")) / Pregel.src("degree"))
+      // Sum messages received from the neighbors
+      .aggMsgs(sum(Pregel.msg))
+      .setMaxIter(5)
+      .run()
 
-  ranks.sort(desc("rank")).show(50)
+    ranks.sort(desc("rank")).show(100)
+  }
 }
