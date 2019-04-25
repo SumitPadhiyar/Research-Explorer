@@ -21,9 +21,6 @@ class PublicationGraph(val df: DataFrame, sparkSession: SparkSession) {
   var paperVerticesDF: DataFrame = _
   var venueVerticesDF: DataFrame = _
 
-  var authorNameDF: DataFrame = _
-  var paperNameDF: DataFrame = _
-
   var graph: GraphFrame = _
 
   // Initialize graph
