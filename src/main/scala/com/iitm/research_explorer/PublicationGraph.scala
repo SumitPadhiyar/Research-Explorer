@@ -11,15 +11,18 @@ class PublicationGraph(val df: DataFrame, sparkSession: SparkSession) {
 
   import sparkSession.implicits._
 
-  private var paperVenueEdgesDF: DataFrame = _
-  private var paperAuthorEdgesDF: DataFrame = _
-  private var authorVenueEdgesDF: DataFrame = _
-  private var authorAuthorEdgesDF: DataFrame = _
-  private var paperPaperEdgesDF: DataFrame = _
+  var paperVenueEdgesDF: DataFrame = _
+  var paperAuthorEdgesDF: DataFrame = _
+  var authorVenueEdgesDF: DataFrame = _
+  var authorAuthorEdgesDF: DataFrame = _
+  var paperPaperEdgesDF: DataFrame = _
 
-  private var authorVerticesDF: DataFrame = _
-  private var paperVerticesDF: DataFrame = _
-  private var venueVerticesDF: DataFrame = _
+  var authorVerticesDF: DataFrame = _
+  var paperVerticesDF: DataFrame = _
+  var venueVerticesDF: DataFrame = _
+
+  var authorNameDF: DataFrame = _
+  var paperNameDF: DataFrame = _
 
   var graph: GraphFrame = _
 
@@ -96,16 +99,19 @@ class PublicationGraph(val df: DataFrame, sparkSession: SparkSession) {
 
   def generateVertices(): Unit = {
     authorVerticesDF = df.withColumn("authors", explode($"authors"))
-      .select($"authors.ids")
-      .as[Array[String]]
-      .filter(authorids => authorids.length == 1)
-      .select(explode($"ids").as("id"))
+      .select($"authors.ids", $"authors.name")
+      .as[Author]
+      .filter(author => author.ids.length == 1)
+      .select(explode($"ids").as("id"), $"name")
+      .distinct()
       .withColumn("type", lit(VertexType.Author.toString))
 
-    paperVerticesDF = df.select("id")
+    paperVerticesDF = df.select($"id", $"title".as("name"))
                         .withColumn("type", lit(VertexType.Paper.toString))
 
     venueVerticesDF = df.select($"venue".as("id")).filter(length($"id") =!= 0)
+                        .distinct()
+                        .withColumn("name", lit(null))
                         .withColumn("type", lit(VertexType.Venue.toString))
 
     authorVerticesDF.printSchema()
@@ -114,6 +120,10 @@ class PublicationGraph(val df: DataFrame, sparkSession: SparkSession) {
     paperVerticesDF.show()
     venueVerticesDF.printSchema()
     venueVerticesDF.show()
+  }
+
+  def generateMappings(): Unit = {
+
   }
 
   /**
