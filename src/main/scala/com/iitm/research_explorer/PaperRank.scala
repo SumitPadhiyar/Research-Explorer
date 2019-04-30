@@ -1,8 +1,8 @@
 package com.iitm.research_explorer
 
-import org.graphframes.GraphFrame
-import org.graphframes.lib.Pregel
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.graphframes.lib.Pregel
 
 /**
   *
@@ -19,15 +19,47 @@ import org.apache.spark.sql.functions._
   * Initialize rank with the degree of each vertex
   * To compute the delta, we keep track of both the current and previous rank.
   * Initially previous_rank = 1 and current_rank = 1 / deg(v)
-
   */
-class PaperRank (graph: GraphFrame) {
 
-  def execute() : Unit ={
-    val ranks = graph.pregel
+class PaperRank(publicationGraph: PublicationGraph, sparkSession: SparkSession) {
+
+  private var rankDF: Option[DataFrame] = None
+
+  def displayAuthorRankings(): Unit = {
+
+    if (rankDF.isEmpty) {
+      execute()
+    }
+
+    val df = rankDF.get
+
+    df.where(col("type").equalTo(VertexType.Author.toString))
+      .drop(df("type")).drop(df("degree")).drop(df("prev_rank"))
+      .show()
+  }
+
+  def displayPaperRankings(): Unit = {
+
+    if (rankDF.isEmpty) {
+      execute()
+    }
+
+    val df = rankDF.get
+
+    df.where(col("type").equalTo(VertexType.Paper.toString))
+      .drop(df("type")).drop(df("degree")).drop(df("prev_rank"))
+      .show()
+  }
+
+  def execute(): Option[DataFrame] = {
+
+    if (rankDF.isDefined) {
+      return rankDF
+    }
+
+    val DF = publicationGraph.graph.pregel
       // Column current rank. Normalizes the rank after adding all the messages
-      .withVertexColumn("rank",  lit(1.0),
-      coalesce(Pregel.msg, lit(0.0)) + col("rank"))
+      .withVertexColumn("rank", lit(1.0), coalesce(Pregel.msg, lit(0.0)) + col("rank"))
       // Column previous_rank. After the messages are received, it stores the current
       // value of rank
       .withVertexColumn("prev_rank", lit(0.0), col("rank"))
@@ -35,9 +67,26 @@ class PaperRank (graph: GraphFrame) {
       .sendMsgToDst((Pregel.src("rank") - Pregel.src("prev_rank")) / Pregel.src("degree"))
       // Sum messages received from the neighbors
       .aggMsgs(sum(Pregel.msg))
-      .setMaxIter(5)
+      .setMaxIter(1)
       .run()
+      .sort(desc("rank"))
 
-    ranks.sort(desc("rank")).show(100)
+    rankDF = Option(DF)
+    rankDF
   }
+
+  def displayVenueRankings(): Unit = {
+
+    if (rankDF.isEmpty) {
+      execute()
+    }
+
+    val df = rankDF.get
+
+    df.where(col("type").equalTo(VertexType.Venue.toString))
+      .drop(df("type")).drop(df("degree")).drop(df("prev_rank")).drop(df("name"))
+      .show()
+  }
+
+
 }
