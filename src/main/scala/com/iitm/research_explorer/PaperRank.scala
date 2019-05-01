@@ -67,7 +67,7 @@ class PaperRank(publicationGraph: PublicationGraph, sparkSession: SparkSession) 
       .sendMsgToDst((Pregel.src("rank") - Pregel.src("prev_rank")) / Pregel.src("degree"))
       // Sum messages received from the neighbors
       .aggMsgs(sum(Pregel.msg))
-      .setMaxIter(1)
+      .setMaxIter(5)
       .run()
       .sort(desc("rank"))
 

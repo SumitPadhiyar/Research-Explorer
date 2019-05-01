@@ -10,10 +10,10 @@ object Main extends App {
   val spark = SparkSession
     .builder()
     .appName("research-explorer")
-    .config("spark.master", "local")
+    /*.config("spark.master", "local")
     .config("spark.executor.cores", "8")
     .config("spark.driver.memory", "4g")
-    .config("spark.executor.memory", "4g")
+    .config("spark.executor.memory", "4g")*/
     .getOrCreate()
 
   spark.sparkContext.setCheckpointDir("/tmp")
@@ -21,7 +21,7 @@ object Main extends App {
   // Change log level - use INFO for more descriptive logs
   spark.sparkContext.setLogLevel("WARN")
 
-  val df = spark.read.json(args(0))
+  val df = spark.read.json("s3://com.iitm.researchexplorer.dataset/s2-large")
 
   val citationGraph = new CitationGraph(df)
 
@@ -32,12 +32,16 @@ object Main extends App {
   println("Number of edges: " + publicationGraph.graph.edges.count)
 
   val paperRank = new PaperRank(publicationGraph, spark)
+  paperRank.displayPaperRankings()
+  paperRank.displayAuthorRankings()
   paperRank.displayVenueRankings()
-//  val queries = new Queries(publicationGraph, spark)
-//  queries.mostCitedPapers()
-//  queries.mostPopularAuthors()
-//  queries.mostPopularVenues()
-//  queries.mostCitedAuthors()
+
+  val queries = new Queries(publicationGraph, spark)
+  queries.mostCitedPapers()
+  queries.mostPopularAuthors()
+  queries.mostPopularVenues()
+  queries.mostCitedAuthors()
+
   spark.stop()
 
 }
