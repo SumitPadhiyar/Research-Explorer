@@ -29,12 +29,12 @@ class Queries(publicationGraph: PublicationGraph, sparkSession: SparkSession) {
       .drop(paperAuthorEdgesDF.col("type"))
       .groupBy("dst")
       .agg(count("dst"))
-      .sort(desc("count(dst)"))
       .withColumnRenamed("count(dst)", "citations")
       .join(authorVerticesDF, col(DST) === authorVerticesDF.col("id"))
+      .sort(desc("citations"))
       .drop(authorVerticesDF.col("type"))
       .drop(authorVerticesDF.col("id"))
-      .show(ROWS)
+      .show(ROWS, false)
   }
 
   /*
@@ -46,15 +46,15 @@ class Queries(publicationGraph: PublicationGraph, sparkSession: SparkSession) {
     publicationGraph.paperVenueEdgesDF
       .groupBy("dst")
       .agg(count("dst"))
-      .sort(desc("count(dst)"))
       .withColumnRenamed("count(dst)", "citations")
       .drop(col("src"))
       .join(venueVerticesDF, col(DST) === venueVerticesDF.col("id"))
+      .sort(desc("citations"))
       .drop(col("dst"))
       .drop(col("type"))
       .drop(col("name"))
       .withColumnRenamed("id", "name")
-      .show(ROWS)
+      .show(ROWS, false)
   }
 
   /*
@@ -65,9 +65,9 @@ class Queries(publicationGraph: PublicationGraph, sparkSession: SparkSession) {
     publicationGraph.paperPaperEdgesDF
       .groupBy("dst")
       .agg(count("dst"))
-      .sort(desc("count(dst)"))
       .withColumnRenamed("count(dst)", "citations")
       .join(paperVerticesDF, col(DST) === col("id"))
+      .sort(desc("citations"))
       .drop(paperVerticesDF.col("type"))
       .drop(paperVerticesDF.col("id"))
       .drop(col("dst"))
@@ -83,13 +83,13 @@ class Queries(publicationGraph: PublicationGraph, sparkSession: SparkSession) {
     publicationGraph.paperAuthorEdgesDF
       .groupBy("dst")
       .agg(count("dst"))
-      .sort(desc("count(dst)"))
       .withColumnRenamed("count(dst)", "citations")
       .join(authorVerticesDF, col(DST) === authorVerticesDF.col("id"))
+      .sort(desc("citations"))
       .drop(authorVerticesDF.col("type"))
       .drop(authorVerticesDF.col("id"))
       .drop(col("dst"))
-      .show(ROWS)
+      .show(ROWS, false)
   }
 
 }
