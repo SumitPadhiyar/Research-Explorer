@@ -34,7 +34,7 @@ class Queries(publicationGraph: PublicationGraph, sparkSession: SparkSession) {
       .sort(desc("citations"))
       .drop(authorVerticesDF.col("type"))
       .drop(authorVerticesDF.col("id"))
-      .show(ROWS)
+      .show(ROWS, false)
   }
 
   /*
@@ -54,7 +54,7 @@ class Queries(publicationGraph: PublicationGraph, sparkSession: SparkSession) {
       .drop(col("type"))
       .drop(col("name"))
       .withColumnRenamed("id", "name")
-      .show(ROWS)
+      .show(ROWS, false)
   }
 
   /*
@@ -89,7 +89,7 @@ class Queries(publicationGraph: PublicationGraph, sparkSession: SparkSession) {
       .drop(authorVerticesDF.col("type"))
       .drop(authorVerticesDF.col("id"))
       .drop(col("dst"))
-      .show(ROWS)
+      .show(ROWS, false)
   }
 
 }

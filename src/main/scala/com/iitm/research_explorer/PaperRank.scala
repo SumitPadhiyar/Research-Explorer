@@ -24,6 +24,8 @@ import org.graphframes.lib.Pregel
 class PaperRank(publicationGraph: PublicationGraph, sparkSession: SparkSession) {
 
   private var rankDF: Option[DataFrame] = None
+  val ROWS = 50 // Shows top 50 rows in all the queries
+
 
   def displayAuthorRankings(): Unit = {
 
@@ -36,7 +38,7 @@ class PaperRank(publicationGraph: PublicationGraph, sparkSession: SparkSession) 
     df.where(col("type").equalTo(VertexType.Author.toString))
       .drop(df("type")).drop(df("degree")).drop(df("prev_rank"))
       .sort("id")
-      .show()
+      .show(ROWS, false)
   }
 
   def displayPaperRankings(): Unit = {
@@ -49,7 +51,7 @@ class PaperRank(publicationGraph: PublicationGraph, sparkSession: SparkSession) 
 
     df.where(col("type").equalTo(VertexType.Paper.toString))
       .drop(df("type")).drop(df("degree")).drop(df("prev_rank"))
-      .show()
+      .show(ROWS)
   }
 
   def execute(): Option[DataFrame] = {
@@ -68,7 +70,7 @@ class PaperRank(publicationGraph: PublicationGraph, sparkSession: SparkSession) 
       .sendMsgToDst((Pregel.src("rank") - Pregel.src("prev_rank")) / Pregel.src("degree"))
       // Sum messages received from the neighbors
       .aggMsgs(sum(Pregel.msg))
-      .setMaxIter(5)
+      .setMaxIter(1)
       .run()
       .sort(desc("rank"))
 
@@ -86,7 +88,7 @@ class PaperRank(publicationGraph: PublicationGraph, sparkSession: SparkSession) 
 
     df.where(col("type").equalTo(VertexType.Venue.toString))
       .drop(df("type")).drop(df("degree")).drop(df("prev_rank")).drop(df("name"))
-      .show()
+      .show(ROWS, false)
   }
 
 
