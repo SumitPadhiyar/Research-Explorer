@@ -35,6 +35,7 @@ class PaperRank(publicationGraph: PublicationGraph, sparkSession: SparkSession) 
 
     df.where(col("type").equalTo(VertexType.Author.toString))
       .drop(df("type")).drop(df("degree")).drop(df("prev_rank"))
+      .sort("id")
       .show()
   }
 

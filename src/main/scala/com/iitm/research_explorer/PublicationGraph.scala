@@ -100,7 +100,7 @@ class PublicationGraph(val df: DataFrame, sparkSession: SparkSession) {
       .as[Author]
       .filter(author => author.ids.length == 1)
       .select(explode($"ids").as("id"), $"name")
-      .distinct()
+      .dropDuplicates(Seq("id"))
       .withColumn("type", lit(VertexType.Author.toString))
 
     paperVerticesDF = df.select($"id", $"title".as("name"))
