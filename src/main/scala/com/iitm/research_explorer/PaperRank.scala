@@ -35,9 +35,9 @@ class PaperRank(publicationGraph: PublicationGraph, sparkSession: SparkSession) 
 
     val df = rankDF.get
 
+    println("Author rank:")
     df.where(col("type").equalTo(VertexType.Author.toString))
       .drop(df("type")).drop(df("degree")).drop(df("prev_rank"))
-      .sort("id")
       .show(ROWS, false)
   }
 
@@ -49,6 +49,7 @@ class PaperRank(publicationGraph: PublicationGraph, sparkSession: SparkSession) 
 
     val df = rankDF.get
 
+    println("Paper rank:")
     df.where(col("type").equalTo(VertexType.Paper.toString))
       .drop(df("type")).drop(df("degree")).drop(df("prev_rank"))
       .show(ROWS)
@@ -86,6 +87,7 @@ class PaperRank(publicationGraph: PublicationGraph, sparkSession: SparkSession) 
 
     val df = rankDF.get
 
+    println("Venue rank:")
     df.where(col("type").equalTo(VertexType.Venue.toString))
       .drop(df("type")).drop(df("degree")).drop(df("prev_rank")).drop(df("name"))
       .show(ROWS, false)
