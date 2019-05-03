@@ -23,7 +23,7 @@ object Main extends App {
   // Change log level - use INFO for more descriptive logs
   spark.sparkContext.setLogLevel("WARN")
 
-  val df = spark.read.json("s3://com.iitm.researchexplorer.dataset/s2-large")
+  val df = spark.read.json("s3://com.iitm.researchexplorer.data/s2-large")
   //val df = spark.read.json(args(0))
 
   val citationGraph = new CitationGraph(df)

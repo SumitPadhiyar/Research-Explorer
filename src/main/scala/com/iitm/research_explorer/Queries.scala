@@ -20,6 +20,7 @@ class Queries(publicationGraph: PublicationGraph, sparkSession: SparkSession) {
     var paperPaperEdgesDF = publicationGraph.paperPaperEdgesDF
     var authorVerticesDF = publicationGraph.authorVerticesDF
 
+    println("Most cited authors:")
     paperPaperEdgesDF
       .join(paperAuthorEdgesDF, paperPaperEdgesDF.col(DST) === paperAuthorEdgesDF.col(SRC))
       .drop(paperPaperEdgesDF.col(SRC))
@@ -43,6 +44,7 @@ class Queries(publicationGraph: PublicationGraph, sparkSession: SparkSession) {
   def mostPopularVenues(): Unit = {
     var venueVerticesDF = publicationGraph.venueVerticesDF
 
+    println("Most popular venues:")
     publicationGraph.paperVenueEdgesDF
       .groupBy("dst")
       .agg(count("dst"))
@@ -62,6 +64,7 @@ class Queries(publicationGraph: PublicationGraph, sparkSession: SparkSession) {
   * */
   def mostCitedPapers(): Unit = {
     var paperVerticesDF = publicationGraph.paperVerticesDF
+    println("Most cited papers:")
     publicationGraph.paperPaperEdgesDF
       .groupBy("dst")
       .agg(count("dst"))
@@ -80,6 +83,7 @@ class Queries(publicationGraph: PublicationGraph, sparkSession: SparkSession) {
   def mostPopularAuthors(): Unit = {
     var authorVerticesDF = publicationGraph.authorVerticesDF
 
+    println("Most popular authors (by paper count):")
     publicationGraph.paperAuthorEdgesDF
       .groupBy("dst")
       .agg(count("dst"))
